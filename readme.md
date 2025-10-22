@@ -43,14 +43,14 @@ npx expo install expo-facebook
 
 ## 🔒 2. Environment Variable Setup (`.env`)
 
-Your Firebase API keys must be kept **secret** and should **never** be committed to Git.
+The Firebase API keys must be kept **secret** and should **never** be committed to Git.
 This project uses the `react-native-dotenv` library to securely manage these environment variables.
 
 ### 2.1 Create the `.env` File
 
 Create a file named `.env` in the **root directory** of the project (next to `package.json`).
 
-Inside this file, list the Firebase configuration keys in the `KEY=VALUE` format (the values will be provided through the team’s messenger group chat).
+Inside this file, list the Firebase configuration keys in the `KEY=VALUE` format (the values will be provided through the **team’s messenger group chat**).
 
 > ⚠️ **Important:** Do not wrap values in quotes (`""`).
 
@@ -78,4 +78,4 @@ npx expo start
 ---
 
 **Author:** CreaTECH Development Team
-**Last Updated:** *(insert date)*
+**Last Updated:** *(October 22, 2025 - 8:13 PM)*
