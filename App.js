@@ -97,11 +97,12 @@ const HeaderBackground = ({ children }) => (
   </View>
 );
 
-const CustomTextInput = ({ label, placeholder, secureTextEntry = false, icon, onIconPress, style, value, onChangeText, keyboardType = 'default', autoCapitalize = 'none' }) => (
+const CustomTextInput = ({ label, placeholder, secureTextEntry = false, icon, onIconPress, style, value, onChangeText, keyboardType = 'default', autoCapitalize = 'none', returnKeyType = 'next', onSubmitEditing, inputRef }) => (
   <View style={style}>
     <Text style={styles.inputLabel}>{label}</Text>
     <View style={styles.inputContainer}>
       <TextInput
+        ref={inputRef}
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor={PLACEHOLDER_TEXT}
@@ -110,6 +111,8 @@ const CustomTextInput = ({ label, placeholder, secureTextEntry = false, icon, on
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
       />
       {icon && (
         <TouchableOpacity style={styles.inputIcon} onPress={onIconPress}>
@@ -166,6 +169,52 @@ const CountryPicker = ({ visible, onClose, onSelect, selectedCountry }) => (
     </View>
   </Modal>
 );
+
+// Date Picker Component
+const DatePickerModal = ({ visible, onClose, onDateSelect }) => {
+  const [selectedDate, setSelectedDate] = useState('');
+
+  const handleConfirm = () => {
+    if (selectedDate) {
+      onDateSelect(selectedDate);
+    }
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Birth Date</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color={TEXT_COLOR} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.datePickerContent}>
+            <Text style={styles.datePickerLabel}>Enter your birth date (DD/MM/YYYY):</Text>
+            <TextInput
+              style={styles.dateInput}
+              placeholder="DD/MM/YYYY"
+              value={selectedDate}
+              onChangeText={setSelectedDate}
+              keyboardType="numbers-and-punctuation"
+              maxLength={10}
+            />
+            <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+              <Text style={styles.confirmButtonText}>Confirm Date</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 // Logo
 const CreateCHLogo = () => (
@@ -277,17 +326,40 @@ const LoginScreen = ({ navigateTo, onLogin, onGoogleLogin, onFacebookLogin, isAu
 
 const RegisterScreen = ({ navigateTo, onRegister, isAuthReady, authStatus }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [date, setDate] = useState(''); // Date of Birth
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(COUNTRY_CODES[0]); // Default to Philippines
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+
+  // Create refs for input fields
+  const firstNameRef = React.useRef();
+  const lastNameRef = React.useRef();
+  const emailRef = React.useRef();
+  const phoneRef = React.useRef();
+  const passwordRef = React.useRef();
+  const confirmPasswordRef = React.useRef();
 
   const handleRegisterAttempt = async () => {
+    if (password !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      return;
+    }
+    
+    setPasswordError('');
     setLoading(true);
     await onRegister({
       email,
@@ -300,22 +372,9 @@ const RegisterScreen = ({ navigateTo, onRegister, isAuthReady, authStatus }) => 
     setLoading(false);
   }
 
-  // Dummy components for input fields
-  const TextInputField = ({ label, placeholder, value, onChangeText, style = {} , keyboardType = 'default', secureTextEntry = false, autoCapitalize = 'sentences' }) => (
-    <View style={style}>
-      <Text style={styles.inputLabel}>{label}</Text>
-      <TextInput
-        style={styles.inputSingle}
-        placeholder={placeholder}
-        placeholderTextColor={PLACEHOLDER_TEXT}
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        autoCapitalize={autoCapitalize}
-      />
-    </View>
-  );
+  const handleDateSelect = (selectedDate) => {
+    setDate(selectedDate);
+  };
 
   return (
     <View style={styles.container}>
@@ -340,31 +399,71 @@ const RegisterScreen = ({ navigateTo, onRegister, isAuthReady, authStatus }) => 
         
         {/* First Name / Last Name Row */}
         <View style={styles.rowSpread}>
-          <TextInputField label="First Name" placeholder="First Name" value={firstName} onChangeText={setFirstName} style={styles.halfInput} />
-          <TextInputField label="Last Name" placeholder="Last Name" value={lastName} onChangeText={setLastName} style={styles.halfInput} />
+          <View style={styles.halfInput}>
+            <Text style={styles.inputLabel}>First Name</Text>
+            <TextInput
+              ref={firstNameRef}
+              style={styles.inputSingle}
+              placeholder="First Name"
+              placeholderTextColor={PLACEHOLDER_TEXT}
+              value={firstName}
+              onChangeText={setFirstName}
+              returnKeyType="next"
+              onSubmitEditing={() => lastNameRef.current?.focus()}
+              autoCapitalize="words"
+            />
+          </View>
+          <View style={styles.halfInput}>
+            <Text style={styles.inputLabel}>Last Name</Text>
+            <TextInput
+              ref={lastNameRef}
+              style={styles.inputSingle}
+              placeholder="Last Name"
+              placeholderTextColor={PLACEHOLDER_TEXT}
+              value={lastName}
+              onChangeText={setLastName}
+              returnKeyType="next"
+              onSubmitEditing={() => emailRef.current?.focus()}
+              autoCapitalize="words"
+            />
+          </View>
         </View>
 
         {/* Email */}
-        <TextInputField 
-          label="Email" 
-          placeholder="youremailexample@gmail.com" 
-          value={email} 
-          onChangeText={setEmail} 
-          style={styles.inputGroup} 
-          keyboardType="email-address" 
-          autoCapitalize="none"
-        />
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Email</Text>
+          <TextInput
+            ref={emailRef}
+            style={styles.inputSingle}
+            placeholder="youremailexample@gmail.com"
+            placeholderTextColor={PLACEHOLDER_TEXT}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => setShowDatePicker(true)}
+          />
+        </View>
         
         {/* Birth of Date */}
-        <CustomTextInput
-          label="Birth of date"
-          placeholder="DD/MM/YYYY"
-          icon="calendar-outline"
-          value={date}
-          onChangeText={setDate}
-          style={styles.inputGroup}
-          keyboardType="numbers-and-punctuation"
-        />
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Birth of date</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="DD/MM/YYYY"
+              placeholderTextColor={PLACEHOLDER_TEXT}
+              value={date}
+              onChangeText={setDate}
+              keyboardType="numbers-and-punctuation"
+              editable={false}
+            />
+            <TouchableOpacity style={styles.inputIcon} onPress={() => setShowDatePicker(true)}>
+              <Ionicons name="calendar-outline" size={20} color={PLACEHOLDER_TEXT} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Phone Number (Complex Input) */}
         <View style={styles.inputGroup}>
@@ -379,12 +478,15 @@ const RegisterScreen = ({ navigateTo, onRegister, isAuthReady, authStatus }) => 
               <MaterialCommunityIcons name="menu-down" size={20} color={PLACEHOLDER_TEXT} />
             </TouchableOpacity>
             <TextInput
+              ref={phoneRef}
               style={[styles.input, { flex: 1 }]}
-              placeholder="9123456789"
+              placeholder="9XXXXXXXXX"
               placeholderTextColor={PLACEHOLDER_TEXT}
               keyboardType="phone-pad"
               value={phone}
               onChangeText={setPhone}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
         </View>
@@ -399,9 +501,32 @@ const RegisterScreen = ({ navigateTo, onRegister, isAuthReady, authStatus }) => 
           value={password}
           onChangeText={setPassword}
           style={styles.inputGroup}
+          inputRef={passwordRef}
+          returnKeyType="next"
+          onSubmitEditing={() => confirmPasswordRef.current?.focus()}
         />
 
-        <TouchableOpacity style={[styles.primaryButton, { marginTop: 30 }]} onPress={handleRegisterAttempt} disabled={!isAuthReady || loading || !email || !password || !firstName}>
+        {/* Confirm Password */}
+        <CustomTextInput
+          label="Confirm Password"
+          placeholder="Confirm Password"
+          secureTextEntry={!showConfirmPassword}
+          icon={showConfirmPassword ? 'eye-off' : 'eye'}
+          onIconPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          style={styles.inputGroup}
+          inputRef={confirmPasswordRef}
+          returnKeyType="done"
+        />
+
+        {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+        <TouchableOpacity 
+          style={[styles.primaryButton, { marginTop: 30 }]} 
+          onPress={handleRegisterAttempt} 
+          disabled={!isAuthReady || loading || !email || !password || !firstName || !confirmPassword}
+        >
            {loading ? (
             <ActivityIndicator color="#FFF" />
           ) : (
@@ -417,6 +542,13 @@ const RegisterScreen = ({ navigateTo, onRegister, isAuthReady, authStatus }) => 
           onClose={() => setShowCountryPicker(false)}
           onSelect={setSelectedCountry}
           selectedCountry={selectedCountry}
+        />
+
+        {/* Date Picker Modal */}
+        <DatePickerModal
+          visible={showDatePicker}
+          onClose={() => setShowDatePicker(false)}
+          onDateSelect={handleDateSelect}
         />
 
       </ScrollView>
@@ -655,6 +787,13 @@ const styles = StyleSheet.create({
       fontSize: 16,
   },
   authStatusText: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 14,
+    color: '#D9534F',
+    fontWeight: 'bold',
+  },
+  errorText: {
     textAlign: 'center',
     marginTop: 10,
     fontSize: 14,
@@ -964,5 +1103,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: PLACEHOLDER_TEXT,
     fontWeight: '500',
+  },
+  // Date Picker Styles
+  datePickerContent: {
+    padding: 20,
+  },
+  datePickerLabel: {
+    fontSize: 16,
+    color: TEXT_COLOR,
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  dateInput: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: BORDER_COLOR,
+    height: 56,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  confirmButton: {
+    backgroundColor: PRIMARY_BLUE,
+    borderRadius: 12,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
