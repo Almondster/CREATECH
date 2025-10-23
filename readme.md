@@ -33,10 +33,11 @@ npm install babel-preset-expo
 npm install react-native-dotenv
 ```
 
-**Social Login:** Install the Expo Facebook SDK
+**Social Login:** Install social login
 
 ```bash
 npx expo install expo-facebook
+npx expo install expo-auth-session expo-web-browser
 ```
 
 ---

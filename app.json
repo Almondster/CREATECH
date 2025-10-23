@@ -4,11 +4,12 @@
     "slug": "CREATECH",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/transparentlogo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "com.mobprog.createch", 
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/transparentlogo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,13 +18,21 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/transparentlogo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.mobprog.createch"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/transparentlogo.png"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ],
+    "facebookAppId": 2039774166840885,
+    "facebookDisplayName": "CreaTECH",
+    "facebookScheme": "fb2039774166840885" 
   }
 }
+
